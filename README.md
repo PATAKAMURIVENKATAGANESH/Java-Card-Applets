@@ -1,4 +1,4 @@
-# Java-Card-Applets
+# Java Card Wallet Applet
 
 This repository contains a sample Wallet application for Java Card.
 
@@ -8,46 +8,26 @@ The project consists of two main parts:
 1.  **Applet:** The Java Card applet that runs on the card.
 2.  **Client:** A host application to communicate with the applet.
 
-The Wallet applet allows for basic operations like checking the balance, crediting, and debiting an amount.
+## Applet Functionality
 
-## Project Structure
+The Wallet applet simulates a simple electronic wallet on a Java Card. It supports basic financial operations and is protected by a PIN.
 
-```
-.
-├── applet/             # The Java Card applet
-│   ├── pom.xml
-│   └── src/
-└── client/             # The host client application
-    ├── pom.xml
-    └── src/
-├── build.sh            # Script to build the applet and client
-├── run.sh              # Script to run the client application
-└── README.md
-```
+### APDU Commands
 
-## Prerequisites
+The applet communicates using APDU commands with a custom CLA byte of `0x80`. The supported instructions (INS bytes) are:
 
-*   Java Development Kit (JDK)
-*   Apache Maven
-*   Java Card Development Kit Simulator
+*   **`VERIFY` (0x20):** Verifies the user's PIN. The PIN must be successfully verified before any modification operations (credit/debit) can be performed.
+*   **`CREDIT` (0x30):** Adds a specified amount to the wallet's balance. This operation requires prior PIN verification.
+*   **`DEBIT` (0x40):** Subtracts a specified amount from the wallet's balance. This operation also requires prior PIN verification.
+*   **`GET_BALANCE` (0x50):** Retrieves the current balance from the wallet. This is a public operation and does not require PIN verification.
 
-## How to Build
+### Security
 
-To build both the applet and the client, run the `build.sh` script:
+*   **PIN Protection:** Access to critical functions like `CREDIT` and `DEBIT` is restricted. A user must first present the correct PIN using the `VERIFY` command.
+*   **Try Limit:** The PIN is blocked after 3 incorrect verification attempts for security.
 
-```bash
-./build.sh
-```
+### Data Management
 
-This will compile the source code and create the necessary `.cap` file for the applet and a `.jar` file for the client.
-
-## How to Run
-
-To run the client application and interact with the applet in the simulator, use the `run.sh` script:
-
-```bash
-./run.sh
-```
-
-This script will start the simulator, load the applet, and run the client application.
+*   **Balance:** The applet maintains a balance that cannot exceed a maximum limit (`32767`).
+*   **Transactions:** Both credit and debit transactions are capped at a maximum amount per transaction (`127`).
 
